@@ -1,7 +1,8 @@
-import type { ViewRenderer, ViewTypeRegistration } from "../../types";
+import type { BasesEntry, ViewRenderer, ViewTypeRegistration } from "../../types";
 import type { FullSlug } from "@quartz-community/types";
 import { i18n } from "../../i18n";
-import { resolveEntryPropertyValue } from "../shared/cell";
+import { getColumnLabel, resolveEntryPropertyValue } from "../shared/cell";
+import { groupEntries } from "../shared/group";
 import { transformLink } from "@quartz-community/utils";
 import { resolveImageSrc } from "./cards";
 import type { ResolveImageOpts } from "./cards";
@@ -16,6 +17,7 @@ function formatMessage(template: string, values: Record<string, string | number>
 const GalleryView: ViewRenderer = ({
   entries,
   view,
+  basesData,
   total,
   locale,
   slug,
@@ -29,6 +31,37 @@ const GalleryView: ViewRenderer = ({
   const gridStyle = { gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` };
   const imageOpts: ResolveImageOpts = { slug, allSlugs, linkResolution };
   const transformOpts = { strategy: linkResolution, allSlugs: allSlugs as FullSlug[] };
+  const groupProperty = view.groupBy?.property;
+  const groupPropertyLabel = groupProperty ? getColumnLabel(groupProperty, basesData) : "";
+  const groups = groupEntries(entries, groupProperty, localeStrings.uncategorized);
+
+  const renderGalleryItem = (entry: BasesEntry) => {
+    const imageValue = imageProperty ? resolveEntryPropertyValue(imageProperty, entry) : undefined;
+    const rawImage = imageValue ? String(imageValue) : "";
+    const { src: imageSrc, isColor } = resolveImageSrc(rawImage, imageOpts);
+    return (
+      <div class="bases-gallery-item">
+        <div class="bases-gallery-image">
+          {imageSrc && !isColor ? (
+            <img src={imageSrc} alt={entry.title} loading="lazy" />
+          ) : imageSrc && isColor ? (
+            <span class="bases-gallery-placeholder" style={{ background: imageSrc }} />
+          ) : (
+            <span class="bases-gallery-placeholder" role="img" aria-label={localeStrings.noImage} />
+          )}
+        </div>
+        <div class="bases-gallery-title">
+          <a
+            href={transformLink(slug as FullSlug, entry.slug, transformOpts)}
+            class="internal internal-link"
+            data-slug={entry.slug}
+          >
+            {entry.title}
+          </a>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div class="bases-gallery-wrapper">
@@ -38,41 +71,26 @@ const GalleryView: ViewRenderer = ({
           total,
         })}
       </div>
-      <div class="bases-gallery" style={gridStyle}>
-        {entries.map((entry) => {
-          const imageValue = imageProperty
-            ? resolveEntryPropertyValue(imageProperty, entry)
-            : undefined;
-          const rawImage = imageValue ? String(imageValue) : "";
-          const { src: imageSrc, isColor } = resolveImageSrc(rawImage, imageOpts);
-          return (
-            <div class="bases-gallery-item">
-              <div class="bases-gallery-image">
-                {imageSrc && !isColor ? (
-                  <img src={imageSrc} alt={entry.title} loading="lazy" />
-                ) : imageSrc && isColor ? (
-                  <span class="bases-gallery-placeholder" style={{ background: imageSrc }} />
-                ) : (
-                  <span
-                    class="bases-gallery-placeholder"
-                    role="img"
-                    aria-label={localeStrings.noImage}
-                  />
-                )}
-              </div>
-              <div class="bases-gallery-title">
-                <a
-                  href={transformLink(slug as FullSlug, entry.slug, transformOpts)}
-                  class="internal internal-link"
-                  data-slug={entry.slug}
-                >
-                  {entry.title}
-                </a>
-              </div>
+      {groups ? (
+        Array.from(groups.entries()).map(([label, groupItems]) => (
+          <div class="bases-group">
+            <div class="bases-group-header">
+              <span class="bases-group-title">
+                {groupPropertyLabel && <span class="bases-group-property">{groupPropertyLabel} </span>}
+                <span class="bases-group-label">{label}</span>
+              </span>
+              <span class="bases-group-count">{groupItems.length}</span>
             </div>
-          );
-        })}
-      </div>
+            <div class="bases-gallery" style={gridStyle}>
+              {groupItems.map(renderGalleryItem)}
+            </div>
+          </div>
+        ))
+      ) : (
+        <div class="bases-gallery" style={gridStyle}>
+          {entries.map(renderGalleryItem)}
+        </div>
+      )}
     </div>
   );
 };

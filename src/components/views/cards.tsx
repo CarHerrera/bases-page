@@ -1,4 +1,4 @@
-import type { ViewRenderer, ViewTypeRegistration } from "../../types";
+import type { BasesEntry, ViewRenderer, ViewTypeRegistration } from "../../types";
 import type { FullSlug } from "@quartz-community/types";
 import { i18n } from "../../i18n";
 import {
@@ -7,6 +7,7 @@ import {
   renderCellValue,
   resolveEntryPropertyValue,
 } from "../shared/cell";
+import { groupEntries } from "../shared/group";
 import { transformLink } from "@quartz-community/utils";
 
 function formatMessage(template: string, values: Record<string, string | number>): string {
@@ -73,6 +74,51 @@ const CardsView: ViewRenderer = ({
       : undefined;
   const imageOpts: ResolveImageOpts = { slug, allSlugs, linkResolution };
   const transformOpts = { strategy: linkResolution, allSlugs: allSlugs as FullSlug[] };
+  const groupProperty = view.groupBy?.property;
+  const groupPropertyLabel = groupProperty ? getColumnLabel(groupProperty, basesData) : "";
+  const groups = groupEntries(entries, groupProperty, localeStrings.uncategorized);
+
+  const renderCard = (entry: BasesEntry) => {
+    const ctx = { slug, allSlugs, linkResolution };
+    const imageValue = imageProperty ? resolveEntryPropertyValue(imageProperty, entry) : undefined;
+    const rawImage = imageValue ? String(imageValue) : "";
+    const { src: imageSrc, isColor } = resolveImageSrc(rawImage, imageOpts);
+    const imageAspect =
+      typeof aspectRatio === "number" && aspectRatio > 0
+        ? { aspectRatio: String(aspectRatio) }
+        : undefined;
+    const href = transformLink(slug as FullSlug, entry.slug, transformOpts);
+    return (
+      <a href={href} class="internal internal-link bases-card" data-slug={entry.slug}>
+        {imageSrc && !isColor && (
+          <div class="bases-card-image" style={imageAspect}>
+            <img src={imageSrc} alt={entry.title} loading="lazy" style={{ objectFit: imageFit }} />
+          </div>
+        )}
+        {imageSrc && isColor && (
+          <div
+            class="bases-card-image bases-card-color"
+            style={{ ...imageAspect, backgroundColor: imageSrc }}
+          />
+        )}
+        <div class="bases-card-body">
+          <span class="bases-card-title">{entry.title}</span>
+          <div class="bases-card-meta">
+            {cardMetaColumns.map((column) => {
+              const value = resolveEntryPropertyValue(column, entry);
+              if (isEmptyValue(value)) return null;
+              return (
+                <div class="bases-card-row">
+                  <span class="bases-card-label">{getColumnLabel(column, basesData)}</span>
+                  <span class="bases-card-value">{renderCellValue(value, ctx)}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </a>
+    );
+  };
 
   return (
     <div class="bases-cards-wrapper">
@@ -82,56 +128,26 @@ const CardsView: ViewRenderer = ({
           total,
         })}
       </div>
-      <div class="bases-cards" style={gridStyle}>
-        {entries.map((entry) => {
-          const ctx = { slug, allSlugs, linkResolution };
-          const imageValue = imageProperty
-            ? resolveEntryPropertyValue(imageProperty, entry)
-            : undefined;
-          const rawImage = imageValue ? String(imageValue) : "";
-          const { src: imageSrc, isColor } = resolveImageSrc(rawImage, imageOpts);
-          const imageAspect =
-            typeof aspectRatio === "number" && aspectRatio > 0
-              ? { aspectRatio: String(aspectRatio) }
-              : undefined;
-          const href = transformLink(slug as FullSlug, entry.slug, transformOpts);
-          return (
-            <a href={href} class="internal internal-link bases-card" data-slug={entry.slug}>
-              {imageSrc && !isColor && (
-                <div class="bases-card-image" style={imageAspect}>
-                  <img
-                    src={imageSrc}
-                    alt={entry.title}
-                    loading="lazy"
-                    style={{ objectFit: imageFit }}
-                  />
-                </div>
-              )}
-              {imageSrc && isColor && (
-                <div
-                  class="bases-card-image bases-card-color"
-                  style={{ ...imageAspect, backgroundColor: imageSrc }}
-                />
-              )}
-              <div class="bases-card-body">
-                <span class="bases-card-title">{entry.title}</span>
-                <div class="bases-card-meta">
-                  {cardMetaColumns.map((column) => {
-                    const value = resolveEntryPropertyValue(column, entry);
-                    if (isEmptyValue(value)) return null;
-                    return (
-                      <div class="bases-card-row">
-                        <span class="bases-card-label">{getColumnLabel(column, basesData)}</span>
-                        <span class="bases-card-value">{renderCellValue(value, ctx)}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </a>
-          );
-        })}
-      </div>
+      {groups ? (
+        Array.from(groups.entries()).map(([label, groupItems]) => (
+          <div class="bases-group">
+            <div class="bases-group-header">
+              <span class="bases-group-title">
+                {groupPropertyLabel && <span class="bases-group-property">{groupPropertyLabel} </span>}
+                <span class="bases-group-label">{label}</span>
+              </span>
+              <span class="bases-group-count">{groupItems.length}</span>
+            </div>
+            <div class="bases-cards" style={gridStyle}>
+              {groupItems.map(renderCard)}
+            </div>
+          </div>
+        ))
+      ) : (
+        <div class="bases-cards" style={gridStyle}>
+          {entries.map(renderCard)}
+        </div>
+      )}
     </div>
   );
 };

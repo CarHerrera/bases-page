@@ -160,6 +160,38 @@ th.is-sorted-desc .bases-table-header-sort {
   font-weight: 400;
 }
 
+// Shared group headers for cards/list/gallery views (table and board views
+// have their own group treatments above, built into their native layouts).
+.bases-group + .bases-group {
+  margin-top: 24px;
+}
+
+.bases-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+  font-weight: 600;
+  color: var(--dark);
+  border-bottom: 2px solid var(--gray);
+}
+
+.bases-group-property {
+  color: var(--gray);
+  font-weight: 400;
+}
+
+.bases-group-count {
+  background: var(--lightgray);
+  color: var(--darkgray);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+
 .bases-separator {
   color: var(--gray);
 }

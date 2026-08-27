@@ -5,10 +5,10 @@ import {
   formatValue,
   getColumnLabel,
   getColumns,
-  isEmptyValue,
   renderCellValue,
   resolveEntryPropertyValue,
 } from "../shared/cell";
+import { groupEntries } from "../shared/group";
 import { computeSummary } from "../shared/summary";
 import { transformLink } from "@quartz-community/utils";
 
@@ -17,27 +17,6 @@ function formatMessage(template: string, values: Record<string, string | number>
     (text, [key, value]) => text.replace(`{${key}}`, String(value)),
     template,
   );
-}
-
-function groupEntries(
-  entries: BasesEntry[],
-  groupProperty: string | undefined,
-  emptyLabel: string,
-): Map<string, BasesEntry[]> | null {
-  if (!groupProperty) return null;
-  const groups = new Map<string, BasesEntry[]>();
-  for (const entry of entries) {
-    const rawValue = resolveEntryPropertyValue(groupProperty, entry);
-    const label = isEmptyValue(rawValue) ? emptyLabel : formatValue(rawValue);
-    const key = label || emptyLabel;
-    const existing = groups.get(key);
-    if (existing) {
-      existing.push(entry);
-    } else {
-      groups.set(key, [entry]);
-    }
-  }
-  return groups.size > 0 ? groups : null;
 }
 
 function renderRow(
