@@ -113,6 +113,54 @@ function initTabs(page, cleanupFns) {
   });
 }
 
+function applyFilterChip(viewEl, property, activeValue) {
+  const entries = viewEl.querySelectorAll(".bases-entry");
+  entries.forEach((entry) => {
+    if (!activeValue) {
+      entry.classList.remove("is-filtered-out");
+      return;
+    }
+    let values = [];
+    try {
+      values = JSON.parse(entry.dataset.filterValues || "[]");
+    } catch {
+      values = [];
+    }
+    entry.classList.toggle("is-filtered-out", !values.includes(activeValue));
+  });
+}
+
+function initFilterChips(page, cleanupFns) {
+  const bars = page.querySelectorAll(".bases-filter-chips");
+  bars.forEach((bar) => {
+    // initBases() can run more than once per page load (e.g. an initial call
+    // plus a "nav" event on the same DOM); guard against attaching a second
+    // set of listeners, which would make the toggle-on-click logic below
+    // double-fire and immediately cancel itself out.
+    if (bar.dataset.filterChipsInit === "true") return;
+    bar.dataset.filterChipsInit = "true";
+
+    const viewEl = bar.closest(".bases-view");
+    if (!viewEl) return;
+    const property = bar.dataset.filterProperty;
+    const chips = Array.from(bar.querySelectorAll(".bases-filter-chip"));
+    chips.forEach((chip) => {
+      const handler = () => {
+        const wasActive = chip.classList.contains("is-active");
+        chips.forEach((c) => c.classList.remove("is-active"));
+        if (wasActive) {
+          applyFilterChip(viewEl, property, null);
+        } else {
+          chip.classList.add("is-active");
+          applyFilterChip(viewEl, property, chip.dataset.value);
+        }
+      };
+      chip.addEventListener("click", handler);
+      cleanupFns.push(() => chip.removeEventListener("click", handler));
+    });
+  });
+}
+
 function initBases() {
   const pages = document.querySelectorAll(".bases-page");
   if (pages.length === 0) return;
@@ -121,6 +169,7 @@ function initBases() {
   pages.forEach((page) => {
     initTabs(page, cleanupFns);
     initTables(page, cleanupFns);
+    initFilterChips(page, cleanupFns);
   });
 
   if (window.addCleanup) {

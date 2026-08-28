@@ -9,6 +9,7 @@ import {
   resolveEntryPropertyValue,
 } from "../shared/cell";
 import { groupEntries } from "../shared/group";
+import { entryFilterValues } from "../shared/filter-chips";
 import { computeSummary } from "../shared/summary";
 import { transformLink } from "@quartz-community/utils";
 
@@ -26,11 +27,15 @@ function renderRow(
   slug: string,
   allSlugs: string[],
   linkResolution: "absolute" | "relative" | "shortest",
+  filterProperty: string | undefined,
 ) {
   const transformOpts = { strategy: linkResolution, allSlugs: allSlugs as FullSlug[] };
   const ctx = { slug, allSlugs, linkResolution };
   return (
-    <tr>
+    <tr
+      class="bases-entry"
+      data-filter-values={filterProperty ? entryFilterValues(entry, filterProperty) : undefined}
+    >
       {columns.map((column) => {
         const value = resolveEntryPropertyValue(column, entry);
         const display = formatValue(value);
@@ -76,6 +81,7 @@ const TableView: ViewRenderer = ({
   const groupProperty = view.groupBy?.property;
   const groupPropertyLabel = groupProperty ? getColumnLabel(groupProperty, basesData) : "";
   const groups = groupEntries(entries, groupProperty, localeStrings.uncategorized);
+  const filterProperty = view.filterBy?.property;
 
   return (
     <div class="bases-table-wrapper">
@@ -116,12 +122,12 @@ const TableView: ViewRenderer = ({
                     </td>
                   </tr>
                   {groupEntries.map((entry) =>
-                    renderRow(entry, columns, view, slug, allSlugs, linkResolution),
+                    renderRow(entry, columns, view, slug, allSlugs, linkResolution, filterProperty),
                   )}
                 </>
               ))
             : entries.map((entry) =>
-                renderRow(entry, columns, view, slug, allSlugs, linkResolution),
+                renderRow(entry, columns, view, slug, allSlugs, linkResolution, filterProperty),
               )}
         </tbody>
         {hasSummary && (

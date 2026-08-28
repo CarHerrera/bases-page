@@ -49,6 +49,33 @@
   margin-bottom: 8px;
 }
 
+.bases-filter-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.bases-filter-chip {
+  border: 1px solid var(--lightgray);
+  background: var(--light);
+  color: var(--darkgray);
+  padding: 4px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.8rem;
+
+  &.is-active {
+    background: var(--tertiary);
+    color: var(--light);
+    border-color: var(--tertiary);
+  }
+}
+
+.bases-entry.is-filtered-out {
+  display: none;
+}
+
 .bases-table-wrapper {
   width: 100%;
   overflow-x: auto;

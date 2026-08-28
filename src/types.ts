@@ -148,6 +148,14 @@ export interface BasesView {
   limit?: number;
   /** Group entries by a property */
   groupBy?: GroupBy;
+  /**
+   * Render a row of clickable chips for a property's distinct values above
+   * this view. Clicking a chip narrows the view to entries containing that
+   * value (client-side, AND-ed with the view's declarative filters); clicking
+   * the active chip again clears it, and clicking a different chip switches
+   * to it. Custom extension — not part of the Obsidian Bases spec.
+   */
+  filterBy?: { property: string };
   /** View-specific filters (merged with global filters at resolve time) */
   filters?: FilterNode;
   /** Sort order — list of property paths in priority order */

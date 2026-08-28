@@ -10,6 +10,7 @@ import {
   resolveEntryPropertyValue,
 } from "../shared/cell";
 import { groupEntries } from "../shared/group";
+import { entryFilterValues } from "../shared/filter-chips";
 import { transformLink } from "@quartz-community/utils";
 
 function formatMessage(template: string, values: Record<string, string | number>): string {
@@ -35,6 +36,7 @@ const ListView: ViewRenderer = ({
   const groupProperty = view.groupBy?.property;
   const groupPropertyLabel = groupProperty ? getColumnLabel(groupProperty, basesData) : "";
   const groups = groupEntries(entries, groupProperty, localeStrings.uncategorized);
+  const filterProperty = view.filterBy?.property;
 
   const renderListItem = (entry: BasesEntry) => {
     const ctx = { slug, allSlugs, linkResolution };
@@ -66,7 +68,10 @@ const ListView: ViewRenderer = ({
     }
 
     return (
-      <div class="bases-list-item">
+      <div
+        class="bases-list-item bases-entry"
+        data-filter-values={filterProperty ? entryFilterValues(entry, filterProperty) : undefined}
+      >
         <div class="bases-list-item-properties">
           <span class="bases-list-property">
             <span class="list-bullet">-</span>

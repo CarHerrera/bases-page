@@ -25,6 +25,7 @@ import { registerBuiltinViews } from "./components/views";
 import { registerCustomViews, viewRegistry } from "./registry";
 import { i18n } from "./i18n";
 import { ViewSelector } from "./components/ViewSelector";
+import { FilterChips } from "./components/shared/filter-chips";
 
 const basesMatcher: PageMatcher = ({ fileData }) => {
   return "basesData" in fileData;
@@ -241,23 +242,28 @@ function renderBasesInline(
     if (entries.length === 0) {
       innerHtml = `<div class="bases-empty">${localeStrings.noData}</div>`;
     } else if (Renderer) {
-      innerHtml = render(
-        h(
-          Fragment,
-          null,
-          Renderer({
-            entries,
-            view,
-            basesData,
-            total,
-            locale,
-            slug,
-            allSlugs,
-            linkResolution,
-            options: registration?.options,
-          }),
-        ),
-      );
+      const filterChipsHtml = view.filterBy?.property
+        ? render(h(FilterChips, { entries, property: view.filterBy.property }))
+        : "";
+      innerHtml =
+        filterChipsHtml +
+        render(
+          h(
+            Fragment,
+            null,
+            Renderer({
+              entries,
+              view,
+              basesData,
+              total,
+              locale,
+              slug,
+              allSlugs,
+              linkResolution,
+              options: registration?.options,
+            }),
+          ),
+        );
     } else {
       innerHtml = `<div class="bases-empty">Unknown view type: ${view.type}</div>`;
     }

@@ -3,6 +3,7 @@ import type { FullSlug } from "@quartz-community/types";
 import { i18n } from "../../i18n";
 import { getColumnLabel, resolveEntryPropertyValue } from "../shared/cell";
 import { groupEntries } from "../shared/group";
+import { entryFilterValues } from "../shared/filter-chips";
 import { transformLink } from "@quartz-community/utils";
 import { resolveImageSrc } from "./cards";
 import type { ResolveImageOpts } from "./cards";
@@ -34,13 +35,17 @@ const GalleryView: ViewRenderer = ({
   const groupProperty = view.groupBy?.property;
   const groupPropertyLabel = groupProperty ? getColumnLabel(groupProperty, basesData) : "";
   const groups = groupEntries(entries, groupProperty, localeStrings.uncategorized);
+  const filterProperty = view.filterBy?.property;
 
   const renderGalleryItem = (entry: BasesEntry) => {
     const imageValue = imageProperty ? resolveEntryPropertyValue(imageProperty, entry) : undefined;
     const rawImage = imageValue ? String(imageValue) : "";
     const { src: imageSrc, isColor } = resolveImageSrc(rawImage, imageOpts);
     return (
-      <div class="bases-gallery-item">
+      <div
+        class="bases-gallery-item bases-entry"
+        data-filter-values={filterProperty ? entryFilterValues(entry, filterProperty) : undefined}
+      >
         <div class="bases-gallery-image">
           {imageSrc && !isColor ? (
             <img src={imageSrc} alt={entry.title} loading="lazy" />

@@ -8,6 +8,7 @@ import {
   resolveEntryPropertyValue,
 } from "../shared/cell";
 import { groupEntries } from "../shared/group";
+import { entryFilterValues } from "../shared/filter-chips";
 import { transformLink } from "@quartz-community/utils";
 
 function formatMessage(template: string, values: Record<string, string | number>): string {
@@ -77,6 +78,7 @@ const CardsView: ViewRenderer = ({
   const groupProperty = view.groupBy?.property;
   const groupPropertyLabel = groupProperty ? getColumnLabel(groupProperty, basesData) : "";
   const groups = groupEntries(entries, groupProperty, localeStrings.uncategorized);
+  const filterProperty = view.filterBy?.property;
 
   const renderCard = (entry: BasesEntry) => {
     const ctx = { slug, allSlugs, linkResolution };
@@ -89,7 +91,12 @@ const CardsView: ViewRenderer = ({
         : undefined;
     const href = transformLink(slug as FullSlug, entry.slug, transformOpts);
     return (
-      <a href={href} class="internal internal-link bases-card" data-slug={entry.slug}>
+      <a
+        href={href}
+        class="internal internal-link bases-card bases-entry"
+        data-slug={entry.slug}
+        data-filter-values={filterProperty ? entryFilterValues(entry, filterProperty) : undefined}
+      >
         {imageSrc && !isColor && (
           <div class="bases-card-image" style={imageAspect}>
             <img src={imageSrc} alt={entry.title} loading="lazy" style={{ objectFit: imageFit }} />

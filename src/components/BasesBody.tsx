@@ -10,6 +10,7 @@ import { i18n } from "../i18n";
 import { registerCustomViews, viewRegistry } from "../registry";
 import { ViewSelector } from "./ViewSelector";
 import { registerBuiltinViews } from "./views";
+import { FilterChips } from "./shared/filter-chips";
 import style from "./styles/bases.scss";
 // @ts-expect-error inline script import handled by esbuild plugin
 import script from "./scripts/bases.inline.ts";
@@ -91,17 +92,22 @@ export default ((opts?: BasesPageOptions) => {
                 {entries.length === 0 ? (
                   <div class="bases-empty">{localeStrings.noData}</div>
                 ) : Renderer ? (
-                  <Renderer
-                    entries={entries}
-                    view={view}
-                    basesData={basesData}
-                    total={total}
-                    locale={locale}
-                    slug={slug}
-                    allSlugs={allSlugs}
-                    linkResolution={linkResolution}
-                    options={registration.options}
-                  />
+                  <>
+                    {view.filterBy?.property && (
+                      <FilterChips entries={entries} property={view.filterBy.property} />
+                    )}
+                    <Renderer
+                      entries={entries}
+                      view={view}
+                      basesData={basesData}
+                      total={total}
+                      locale={locale}
+                      slug={slug}
+                      allSlugs={allSlugs}
+                      linkResolution={linkResolution}
+                      options={registration.options}
+                    />
+                  </>
                 ) : (
                   <div class="bases-empty">Unknown view type: {view.type}</div>
                 )}
