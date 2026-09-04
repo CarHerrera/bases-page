@@ -320,6 +320,13 @@ th.is-sorted-desc .bases-table-header-sort {
 .bases-card-image {
   overflow: hidden;
   background: var(--lightgray);
+  // Reserve space before the (often lazy-loaded, externally-hosted) image
+  // finishes loading. Without this the card collapses to ~0 height until
+  // load, which reflows every card below it and drifts the scroll position
+  // out from under a just-landed table-of-contents/anchor jump. A view's
+  // own imageAspectRatio/cardAspect (applied as an inline style) overrides
+  // this default.
+  aspect-ratio: 4 / 3;
 
   img {
     width: 100%;
