@@ -9,17 +9,25 @@
 
 .bases-view-tabs {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
 
   button {
     border: 1px solid var(--lightgray);
     background: var(--light);
     color: var(--darkgray);
-    padding: 6px 12px;
+    padding: 8px 16px;
     border-radius: 999px;
     cursor: pointer;
     font-size: 0.9rem;
+    transition:
+      background 0.15s ease,
+      border-color 0.15s ease,
+      color 0.15s ease;
+
+    &:hover {
+      border-color: var(--secondary);
+    }
 
     &.is-active {
       background: var(--secondary);
@@ -51,28 +59,41 @@
 
 .bases-filter-chips {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
 .bases-filter-chip {
   border: 1px solid var(--lightgray);
   background: var(--light);
   color: var(--darkgray);
-  padding: 4px 10px;
+  padding: 8px 16px;
   border-radius: 999px;
   cursor: pointer;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+
+  &:hover {
+    border-color: var(--secondary);
+  }
 
   &.is-active {
-    background: var(--tertiary);
+    background: var(--secondary);
     color: var(--light);
-    border-color: var(--tertiary);
+    border-color: var(--secondary);
   }
 }
 
 .bases-entry.is-filtered-out {
+  display: none;
+}
+
+.bases-group.is-filtered-out,
+.bases-table-group-header.is-filtered-out {
   display: none;
 }
 

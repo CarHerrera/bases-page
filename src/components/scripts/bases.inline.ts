@@ -128,6 +128,32 @@ function applyFilterChip(viewEl, property, activeValue) {
     }
     entry.classList.toggle("is-filtered-out", !values.includes(activeValue));
   });
+
+  // Cards/list/gallery wrap each group's entries in a .bases-group container;
+  // hide the whole group (header included) once none of its entries remain visible.
+  viewEl.querySelectorAll(".bases-group").forEach((group) => {
+    const hasVisible = Array.from(group.querySelectorAll(".bases-entry")).some(
+      (entry) => !entry.classList.contains("is-filtered-out"),
+    );
+    group.classList.toggle("is-filtered-out", !hasVisible);
+  });
+
+  // Table view lays its groups out flat as sibling <tr>s instead of wrapping
+  // them, so pair each group header with the entry rows up to the next header.
+  viewEl.querySelectorAll(".bases-table-group-header").forEach((header) => {
+    let hasVisible = false;
+    let sibling = header.nextElementSibling;
+    while (sibling && !sibling.classList.contains("bases-table-group-header")) {
+      if (
+        sibling.classList.contains("bases-entry") &&
+        !sibling.classList.contains("is-filtered-out")
+      ) {
+        hasVisible = true;
+      }
+      sibling = sibling.nextElementSibling;
+    }
+    header.classList.toggle("is-filtered-out", !hasVisible);
+  });
 }
 
 function initFilterChips(page, cleanupFns) {
